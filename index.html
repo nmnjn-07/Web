@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Happy Birthday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e6ebf1;--ink:#14202e;--muted:#4f6179;color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1420;--ink:#e8eef6;--muted:#9fb0c6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b1420;--ink:#e8eef6;--muted:#9fb0c6;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.6 "Hanken Grotesk",system-ui,sans-serif;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:#0b1420;z-index:60}
+.serif,h1,h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+button{font-family:inherit}
+:focus-visible{outline:2px solid #d4a75a;outline-offset:3px}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
+/* toolbar */
+.tools{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;z-index:65;display:flex;gap:8px}
+.tools button{font:500 .85rem "Hanken Grotesk",sans-serif;border:1px solid rgba(255,255,255,.25);background:rgba(11,20,32,.78);color:#e8eef6;padding:7px 15px;border-radius:999px;cursor:pointer;backdrop-filter:blur(6px)}
+#add2{display:none}.editing #add2{display:block}
+.editing #edit{background:#d4a75a;color:#14202e;border-color:#d4a75a}
+/* stage */
+#stage{position:relative;min-height:max(100svh,760px);overflow:hidden;color:#eef2f7;
+  background:radial-gradient(ellipse at 50% 40%,#1b3050,#0b1420 70%);display:flex;align-items:center;justify-content:center}
+#intro{position:relative;z-index:3;text-align:center;padding:24px;transition:opacity .45s,transform .45s}
+#intro.out{opacity:0;transform:translateY(-12px)}
+h1{font-size:clamp(2.8rem,10vw,6.2rem);line-height:1;margin:0;letter-spacing:-.02em}
+h1 em{color:#e0b865}
+.lede{color:#aebbd0;max-width:44ch;margin:20px auto 0;font-size:1.1rem}
+.btn{font:500 1rem "Hanken Grotesk",sans-serif;background:#d4a75a;color:#14202e;border:0;border-radius:999px;padding:14px 32px;cursor:pointer;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+#intro .btn{margin-top:34px}
+#collage,#center{display:none}
+#stage.open #collage{display:block;position:absolute;inset:0}
+#stage.open #center{display:flex}
+.pf{position:absolute;transform:translate(-50%,-50%) rotate(var(--r));background:#f5f0e4;padding:4px;border-radius:3px;box-shadow:0 10px 26px rgba(0,0,0,.55);z-index:1;animation:pin 1s cubic-bezier(.2,.8,.3,1) both}
+.pf.L{width:clamp(96px,19vw,240px)}.pf.M{width:clamp(76px,14vw,180px)}.pf.S{width:clamp(58px,10vw,130px)}
+.pf img,.pf .e{display:block;width:100%;aspect-ratio:var(--ar);object-fit:cover}
+.pf .e{background:#16263b;border:1px dashed #6f86a6;display:flex;align-items:center;justify-content:center;color:#9fb0c7;font-size:1.4rem;cursor:pointer}
+@keyframes pin{from{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(0) scale(.2)}}
+#center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;flex-direction:column;align-items:center;gap:12px}
+#cake{width:clamp(220px,34vw,380px);cursor:pointer;filter:drop-shadow(0 18px 24px rgba(0,0,0,.55));animation:cakein 1s cubic-bezier(.2,.8,.3,1) both;-webkit-tap-highlight-color:transparent}
+@keyframes cakein{from{opacity:0;transform:translateY(40px) scale(.85)}}
+.flame{transform-origin:50% 100%;animation:fl 1.2s ease-in-out infinite alternate}
+@keyframes fl{to{transform:scale(.9,1.08)}}
+#cake.out .flame{display:none}
+.cap2{text-align:center;background:rgba(9,16,28,.78);backdrop-filter:blur(6px);padding:12px 24px;border-radius:14px;animation:cakein 1s .7s both}
+.cap2 .t{font-size:clamp(1.5rem,4vw,2.1rem);line-height:1.1}
+.cap2 .t span{color:#e0b865}
+.cap2 .w{color:#aebbd0;font-size:.95rem;margin-top:4px}
+.cap2 .dn{margin-top:6px;color:#e0b865;font-size:.85rem;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(4px)}}
+/* scroll section */
+#scrollSec{padding:110px 16px 90px;text-align:center}
+#cue{font:italic clamp(1.4rem,4vw,1.9rem) "Instrument Serif",Georgia,serif;color:var(--muted);margin:0 0 40px;transition:opacity .5s}
+.scroll{position:relative;width:min(500px,86vw);margin:0 auto;scroll-margin-top:16px;transition:width 1.3s cubic-bezier(.6,0,.2,1) .35s;text-align:left}
+.scroll.open{width:min(1000px,100%)}
+.roll{position:relative;z-index:2;height:84px;border-radius:42px;background:linear-gradient(#9d8756,#d8c89f 18%,#f6eed9 48%,#d9c9a0 78%,#9a8658);box-shadow:0 14px 28px rgba(0,0,0,.35);transition:height 1s ease .3s,border-radius 1s ease .3s}
+.roll::before,.roll::after{content:"";position:absolute;top:5%;height:90%;width:30px;border-radius:50%;background:repeating-radial-gradient(circle,#85723f 0 1.5px,#e8dcbb 1.5px 4px)}
+.roll::before{left:-9px}.roll::after{right:-9px}
+.scroll.open .roll{height:40px;border-radius:20px}
+.roll.bot{height:0;box-shadow:none}
+.scroll.open .roll.bot{height:40px;box-shadow:0 14px 28px rgba(0,0,0,.35)}
+.sheet{display:grid;grid-template-rows:0fr;margin:0 16px;transition:grid-template-rows 1.6s cubic-bezier(.5,0,.2,1) .55s}
+.scroll.open .sheet{grid-template-rows:1fr}
+.in{overflow:hidden;min-height:0;--pi:#2a2118;--pm:#6d5f48;--pl:#cdbd98;--red:#8f1d2a;--navy:#1f3a5f;color:var(--pi);
+  background:linear-gradient(90deg,rgba(120,95,50,.25),transparent 6%,transparent 94%,rgba(120,95,50,.25)),#efe5cb}
+.pad{padding:38px clamp(18px,5vw,48px) 54px}
+.ribbon{position:absolute;z-index:5;left:50%;top:-12px;width:46px;margin-left:-23px;touch-action:none;cursor:grab;user-select:none;transition:transform .9s cubic-bezier(.6,0,.9,.4),opacity .7s}
+.ribbon.gone{transform:translateY(300px);opacity:0}
+.band{position:relative;height:108px;background:linear-gradient(90deg,#6f111b,#b3202a 30%,#d23a45 50%,#b3202a 70%,#6f111b);box-shadow:inset 4px 0 0 rgba(230,190,110,.6),inset -4px 0 0 rgba(230,190,110,.6),0 6px 12px rgba(0,0,0,.35)}
+.knot{position:absolute;top:90px;left:-5px;right:-5px;height:26px;border-radius:9px;background:linear-gradient(#d23a45,#8f1520);box-shadow:0 3px 6px rgba(0,0,0,.4)}
+.tail{position:absolute;top:104px;width:20px;height:130px;clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%);background:linear-gradient(90deg,#8f1520,#d23a45 55%,#a31a25);transform-origin:50% 0;animation:sw 3.4s ease-in-out infinite alternate}
+.tail.a{left:1px;--s:4deg}.tail.b{right:1px;--s:-4deg;animation-delay:.6s}
+@keyframes sw{from{transform:rotate(calc(var(--s) * .4))}to{transform:rotate(var(--s))}}
+.pull{position:absolute;top:246px;left:50%;transform:translateX(-50%);white-space:nowrap;color:var(--muted);font-size:.9rem;animation:bob 2s ease-in-out infinite}
+/* site inside the scroll */
+.tabs{display:flex;gap:26px;border-bottom:1px solid var(--pl);margin-bottom:34px;flex-wrap:wrap}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--pm);font-weight:500;font-size:1rem;padding:8px 0;margin-bottom:-1px;cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--pi);border-color:var(--red)}
+.sp{animation:fade .5s ease both}.sp[hidden]{display:none}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}}
+h2{font-size:clamp(2.1rem,6vw,3.2rem);margin:0 0 6px;line-height:1.05}
+.sub{color:var(--pm);margin:0 0 30px}
+#letter{font:1.4rem/1.75 "Instrument Serif",Georgia,serif;white-space:pre-wrap;word-break:break-word;min-height:240px;max-width:62ch;outline:none}
+#sign{font:italic 1.7rem "Instrument Serif",Georgia,serif;color:var(--red);margin-top:28px;outline:none}
+.editing [data-ed]{outline:1px dashed var(--red);outline-offset:6px;border-radius:4px}
+.editing #name{outline-color:#e0b865}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:26px}
+figure{margin:0;position:relative}
+figure img,.ph{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;border:5px solid #faf5e8;box-shadow:0 6px 16px rgba(60,40,10,.3);cursor:zoom-in}
+.ph{border:1px dashed #8a7a58;box-shadow:none;display:flex;align-items:center;justify-content:center;color:var(--pm);font-size:2rem;cursor:pointer}
+.cap{font:italic 1.15rem "Instrument Serif",Georgia,serif;color:var(--pm);padding-top:8px;min-height:2rem;outline:none}
+.cap:empty::before{content:"Add a caption";opacity:.5}
+.x,.rm{display:none;border:0;cursor:pointer}
+.x{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--pi);color:#efe5cb}
+.editing .x,.editing .rm{display:block}
+.rm{background:none;color:var(--pm)}
+.b2{font:500 .9rem "Hanken Grotesk",sans-serif;background:var(--navy);color:#f5efdf;border:0;border-radius:999px;padding:10px 22px;cursor:pointer;margin-top:26px}
+.note{color:var(--pm);font-size:.9rem;min-height:1.4em;margin:12px 0 0}
+ul.reasons{list-style:none;margin:0;padding:0;max-width:62ch}
+.reasons li{display:flex;gap:14px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--pl);font:1.5rem/1.35 "Instrument Serif",Georgia,serif}
+.reasons li span{flex:1;outline:none}
+#addr{display:none}.editing #addr{display:inline-block}
+#lb{position:fixed;inset:0;z-index:80;background:rgba(6,10,16,.92);display:none;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+#lb.on{display:flex}#lb img{max-width:100%;max-height:100%;border-radius:3px}
+footer{text-align:center;color:var(--muted);padding:10px 20px 60px;font:italic 1.2rem "Instrument Serif",Georgia,serif}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important;transition-delay:0s!important}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="tools"><button id="add2">Add photos</button><button id="edit" aria-pressed="false">Edit page</button></div>
+
+<section id="stage">
+  <div id="intro">
+    <h1>Happy birthday,<br><em data-ed id="name">Your Name</em></h1>
+    <p class="lede" data-ed id="lede">Another year of you. I made this little place to say everything properly.</p>
+    <button class="btn" id="open">Open your surprise</button>
+  </div>
+  <div id="collage"></div>
+  <div id="center">
+    <svg id="cake" viewBox="0 0 320 360" role="img" aria-label="Birthday cake. Tap to blow out the candles"></svg>
+    <div class="cap2"><div class="t serif">Happy birthday, <span class="nm"></span></div><div class="w" id="wish">Tap the candles to make a wish.</div><div class="dn">Scroll down</div></div>
+  </div>
+</section>
+
+<section id="scrollSec">
+  <p id="cue">One more thing. Pull the ribbon.</p>
+  <div class="scroll" id="scroll">
+    <div class="roll"></div>
+    <div class="sheet"><div class="in" id="in" inert><div class="pad">
+      <div class="tabs" id="tabs" role="tablist">
+        <button role="tab" data-t="letter" aria-selected="true">Letter</button>
+        <button role="tab" data-t="photos" aria-selected="false">Photos</button>
+        <button role="tab" data-t="reasons" aria-selected="false">Reasons</button>
+      </div>
+      <div class="sp" id="p-letter">
+        <h2>A letter for <span class="nm"></span></h2>
+        <p class="sub">Written with a lot of thought.</p>
+        <div id="letter" data-ed></div>
+        <div id="sign" data-ed>Always yours</div>
+      </div>
+      <div class="sp" id="p-photos" hidden>
+        <h2>Us</h2>
+        <p class="sub">The moments I keep coming back to.</p>
+        <div class="grid" id="grid"></div>
+        <button class="b2" id="add">Add photos</button>
+        <p class="note" id="note"></p>
+      </div>
+      <div class="sp" id="p-reasons" hidden>
+        <h2>Reasons I love you</h2>
+        <p class="sub">A short list that could be much longer.</p>
+        <ul class="reasons" id="rl"></ul>
+        <button class="b2" id="addr">Add a reason</button>
+      </div>
+    </div></div></div>
+    <div class="roll bot"></div>
+    <div class="ribbon" id="rib" role="button" tabindex="0" aria-label="Pull the ribbon to open the scroll">
+      <div class="band"><div class="knot"></div></div><div class="tail a"></div><div class="tail b"></div><div class="pull">Pull down</div>
+    </div>
+  </div>
+</section>
+<footer>Made with love, just for you.</footer>
+<input type="file" id="file" accept="image/*" multiple hidden>
+<div id="lb" role="dialog" aria-label="Photo"><img alt=""></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const st={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}};
+
+/* ---- text ---- */
+const LETTER="Happy birthday, my love.\n\nClick Edit page at the top, then click here and write your letter. Say what you've never quite found the right moment to say: how we met, what you notice about her, the memories you replay, what you hope the next year brings.\n\nThere's no limit. The page grows as you write.";
+const ed={name:$('#name'),lede:$('#lede'),letter:$('#letter'),sign:$('#sign')},D={};
+for(const k in ed)D[k]=ed[k].textContent;D.letter=LETTER;
+const sync=()=>$$('.nm').forEach(n=>n.textContent=ed.name.innerText.trim()||D.name);
+for(const k in ed){ed[k].textContent=st.get('bd3:'+k)||D[k];ed[k].addEventListener('input',()=>{st.set('bd3:'+k,ed[k].innerText);sync()})}
+sync();
+
+/* ---- cake ---- */
+(function(){const iv='#fbf5e6',gd='#c9a45c';let s='<ellipse cx="160" cy="338" rx="146" ry="16" fill="#b8923f"/><ellipse cx="160" cy="333" rx="138" ry="13" fill="#e8d9ae"/>';
+  const tier=(x,y,w,h,c)=>{s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" fill="${c}"/><rect x="${x}" y="${y+h-9}" width="${w}" height="6" fill="${gd}"/>`;
+    for(let p=x+16;p<x+w-14;p+=22)s+=`<rect x="${p}" y="${y}" width="12" height="${16+(p*7)%16}" rx="6" fill="${iv}"/>`;
+    s+=`<rect x="${x-3}" y="${y-8}" width="${w+6}" height="16" rx="8" fill="${iv}"/>`;
+    for(let p=x+14;p<x+w-8;p+=20)s+=`<circle cx="${p}" cy="${y+h-22}" r="2.6" fill="${gd}"/>`};
+  tier(40,238,240,86,'#5a3828');tier(72,164,176,74,'#e2cfa6');tier(102,100,116,64,'#8c1d2b');
+  const berry=(x,y)=>s+=`<circle cx="${x}" cy="${y}" r="9" fill="#c2283a"/><path d="M${x-6} ${y-7}l6 -5l6 5z" fill="#4f7f52"/><circle cx="${x-3}" cy="${y}" r="1.2" fill="#f8d5d0"/><circle cx="${x+3}" cy="${y+3}" r="1.2" fill="#f8d5d0"/>`;
+  [[64,230],[256,230],[94,157],[226,157]].forEach(b=>{s+=`<circle cx="${b[0]}" cy="${b[1]}" r="9" fill="#c2283a"/><path d="M${b[0]-6} ${b[1]-7}l6 -5l6 5z" fill="#4f7f52"/><circle cx="${b[0]-3}" cy="${b[1]}" r="1.2" fill="#f8d5d0"/><circle cx="${b[0]+3}" cy="${b[1]+3}" r="1.2" fill="#f8d5d0"/>`});
+  for(let i=0;i<5;i++){const x=122+i*19;s+=`<rect x="${x-3}" y="64" width="6" height="30" rx="2" fill="${i%2?'#264a7a':gd}"/><g class="flame" style="animation-delay:${i*.18}s"><path d="M${x} 38q-8 12 0 24q8-12 0-24z" fill="#f4b942"/><path d="M${x} 48q-3.5 7 0 13q3.5-7 0-13z" fill="#fff4c9"/></g>`}
+  $('#cake').innerHTML=s})();
+
+/* ---- confetti ---- */
+const cv=$('#fx'),cx=cv.getContext('2d');let P=[],on=false;
+function fit(){cv.width=innerWidth*devicePixelRatio;cv.height=innerHeight*devicePixelRatio}fit();addEventListener('resize',fit);
+const C=['#d4a75a','#b3202a','#f5efdf','#7fa6d8'];
+function burst(x,y,n){for(let i=0;i<n;i++){const a=-Math.PI/2+(Math.random()-.5)*2.4,v=5+Math.random()*9;
+  P.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:2.5+Math.random()*3,c:C[i%4],l:110+Math.random()*50})}
+  if(!on){on=true;requestAnimationFrame(tick)}}
+function tick(){const d=devicePixelRatio;cx.clearRect(0,0,cv.width,cv.height);P=P.filter(p=>p.l-->0);
+  P.forEach(p=>{p.vy+=.22;p.vx*=.985;p.x+=p.vx;p.y+=p.vy;cx.globalAlpha=Math.min(1,p.l/40);cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x*d,p.y*d,p.r*d,0,7);cx.fill()});
+  if(P.length)requestAnimationFrame(tick);else{on=false;cx.clearRect(0,0,cv.width,cv.height)}}
+
+/* ---- photos (shared by collage + gallery) ---- */
+let photos=[];try{photos=JSON.parse(st.get('bd3:photos')||'[]')}catch(e){}
+const grid=$('#grid'),note=$('#note');let editing=false;
+const save=()=>{const ok=st.set('bd3:photos',JSON.stringify(photos));note.textContent=photos.length&&!ok?'These photos are too large to be remembered. They stay until you close the page.':''};
+/* x%, y%, size, rotation */
+const SL=[[11,17,'L',-6],[89,15,'L',5],[10,80,'L',4],[90,82,'L',-5],[30,9,'M',3],[70,8,'M',-4],[25,91,'M',-3],[75,92,'M',6],[6,48,'M',-4],[94,49,'M',4],[24,35,'S',7],[77,33,'S',-6],[23,65,'S',-7],[78,67,'S',5],[50,5,'S',-3],[50,95,'S',3]];
+const AR=['4/5','1/1','5/4'];
+function collage(anim){const col=$('#collage');col.innerHTML='';const W=col.clientWidth,H=col.clientHeight;
+  SL.forEach((s,i)=>{const f=document.createElement('div');f.className='pf '+s[2];
+    f.style.cssText=`left:${s[0]}%;top:${s[1]}%;--r:${s[3]}deg;--ar:${AR[i%3]};--dx:${(50-s[0])*W/100}px;--dy:${(50-s[1])*H/100}px;`+(anim?`animation-delay:${.5+i*.08}s`:'animation:none');
+    if(photos.length){const im=document.createElement('img');im.alt='';im.src=photos[i%photos.length].src;f.appendChild(im)}
+    else{const e=document.createElement('div');e.className='e';e.textContent='+';e.onclick=()=>$('#file').click();f.appendChild(e)}
+    col.appendChild(f)})}
+function gallery(){grid.innerHTML='';
+  if(!photos.length){for(let i=0;i<3;i++){const f=document.createElement('figure');f.innerHTML='<div class="ph" role="button" tabindex="0" aria-label="Add a photo">+</div><div class="cap" style="opacity:.6">Your photo here</div>';f.querySelector('.ph').onclick=()=>$('#file').click();grid.appendChild(f)}return}
+  photos.forEach((p,i)=>{const f=document.createElement('figure');f.innerHTML='<img alt="A photo of us"><button class="x" aria-label="Remove photo">✕</button><div class="cap"></div>';
+    const im=f.querySelector('img');im.src=p.src;im.onclick=()=>{if(editing)return;$('#lb img').src=p.src;$('#lb').classList.add('on')};
+    const c=f.querySelector('.cap');c.textContent=p.cap||'';c.contentEditable=editing;c.oninput=()=>{p.cap=c.innerText.trim();save()};
+    f.querySelector('.x').onclick=()=>{photos.splice(i,1);save();render()};grid.appendChild(f)})}
+function render(){gallery();if($('#stage').classList.contains('open'))collage(false)}
+render();
+$('#lb').onclick=()=>$('#lb').classList.remove('on');
+$('#add').onclick=$('#add2').onclick=()=>$('#file').click();
+const shrink=f=>new Promise(r=>{const u=URL.createObjectURL(f),im=new Image();
+  im.onload=()=>{const s=Math.min(1,760/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);r(c.toDataURL('image/jpeg',.74))};im.onerror=()=>r(null);im.src=u});
+$('#file').onchange=async e=>{for(const f of e.target.files){const s=await shrink(f);if(s)photos.push({src:s,cap:''})}save();render();e.target.value=''};
+
+/* ---- the surprise ---- */
+$('#open').onclick=()=>{$('#intro').classList.add('out');
+  setTimeout(()=>{$('#intro').style.display='none';$('#stage').classList.add('open');collage(true);burst(innerWidth/2,innerHeight*.5,90)},450)};
+$('#cake').onclick=function(){if(this.classList.contains('out'))return;this.classList.add('out');
+  const r=this.getBoundingClientRect();burst(r.left+r.width/2,r.top+40,100);$('#wish').textContent='Make a wish. I hope every one comes true.'};
+
+/* ---- the scroll ---- */
+const rib=$('#rib'),scr=$('#scroll');let opened=false,sy=null,dy=0;
+function openScroll(){if(opened)return;opened=true;rib.style.transform='';rib.classList.add('gone');$('#cue').style.opacity=0;
+  setTimeout(()=>{scr.classList.add('open');$('#in').removeAttribute('inert')},450);
+  setTimeout(()=>{rib.style.display='none';scr.scrollIntoView({behavior:'smooth',block:'start'})},1300)}
+rib.addEventListener('pointerdown',e=>{sy=e.clientY;dy=0;rib.setPointerCapture(e.pointerId);rib.style.transition='none'});
+rib.addEventListener('pointermove',e=>{if(sy==null)return;dy=Math.max(0,Math.min(170,e.clientY-sy));rib.style.transform=`translateY(${dy}px)`});
+rib.addEventListener('pointerup',()=>{if(sy==null)return;const d=dy;sy=null;rib.style.transition='';if(d>60||d<6)openScroll();else rib.style.transform=''});
+rib.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openScroll()}});
+
+/* ---- tabs ---- */
+$$('#tabs button').forEach(b=>b.onclick=()=>{$$('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));$$('.sp').forEach(p=>p.hidden=p.id!=='p-'+b.dataset.t)});
+
+/* ---- reasons ---- */
+let rs;try{rs=JSON.parse(st.get('bd3:reasons'))}catch(e){}
+if(!Array.isArray(rs))rs=["The way you laugh at your own jokes.","How you make ordinary days feel like plans.","Write your own reason here."];
+const rl=$('#rl');
+const saveR=()=>{rs=$$('.reasons li span').map(s=>s.innerText.trim()).filter(Boolean);st.set('bd3:reasons',JSON.stringify(rs))};
+function li(t){const l=document.createElement('li');l.innerHTML='<span></span><button class="rm" aria-label="Remove">✕</button>';
+  const s=l.querySelector('span');s.textContent=t;s.contentEditable=editing;s.oninput=saveR;l.querySelector('.rm').onclick=()=>{l.remove();saveR()};return l}
+rs.forEach(t=>rl.appendChild(li(t)));
+$('#addr').onclick=()=>{const l=li('');rl.appendChild(l);l.querySelector('span').focus()};
+
+/* ---- edit mode ---- */
+$('#edit').onclick=()=>{editing=!editing;document.body.classList.toggle('editing',editing);
+  $('#edit').textContent=editing?'Done':'Edit page';$('#edit').setAttribute('aria-pressed',editing);
+  $$('[data-ed],.cap,.reasons li span').forEach(e=>e.contentEditable=editing);
+  if(!editing){saveR();save()}};
+})();
+</script>
+</body>
+</html>
